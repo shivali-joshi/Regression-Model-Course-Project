@@ -1,0 +1,100 @@
+---
+title: "Regression Models Course Project"
+author: "Scott C. Davis"
+date: "June 21, 2015"
+output: html_document
+---
+
+##Summary
+
+The study represents a course project for the Regression Model class from John Hopkins University under the Data Science Specialization. The code for the analysis is available at:
+
+The mtcars dataset comes preloaded from the dataset() function in R as a data.frame with 32 observations on 11 variables. According to the R documentation, the data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models). The numeric variables include MPG represents Miles/(US) gallon, disp displacement in cubic inches, hp gross horsepower, drat rear axle ratio, wt weight in pound per 1000 and qsec in quarter mile time. The binary variables include vs in V/S with 0 being no and 1 as yes as well as am representing transmission with 0 being automatic and 1 as manual. The nominal variables include gear as number of forward gears, carb as number of carburetors, and cyl as number of cylinders. 
+
+##Data pre-processing  
+
+The first step involves loading the dataset and getting different summaries of the dataset. The mtcars dataset comes with numeric variables, but I do not have to convert to numeric,
+binary, and nominal because I am not graphing each individual variable. 
+
+```{r}
+#Get data types
+str(mtcars)
+```
+
+##Data Visualization
+
+The lattice package was used for analyzing the variables. Figure 1 shows a scatterplot matrix was shown with the number of cylinders color-coded as factors. Figure 2 shows a regression line fit through the binary variables automatic or manual. 
+
+Looking Figure 1, there are variables showing with positive and negative correlation. The plots showing negative correlation include mpg and disp, mpg and wt, and mpg and hp. The finding seems reasonable because in most cars, there is an inverse relationship between mpg and weight, displacement of the engine and horsepower. The plots showing positive correlation include disp and hp as well as disp and weight. The finding seems reasonable because a heavier vehicle needs a higher displacement engine and more horsepower comes from a higher displacement engine. 
+
+Looking Figure 2, mpg has a higher value with am taking on a value of 1 (manual) over 0 (automatic). There could be other variables in the model determining the best fit, so I included more in the multiple regression model. Ommited variable bias could occur because the other variables from the dataset were not included. 
+
+##Regression Model
+
+The second step involves creating a linear regression with mpg as the dependent with cyl, disp, hp, drat, wt, qsec, vs, am, gear, and carb as independent. All the variables were included in the linear regression model with no changes to functional forms or added interaction terms. 
+
+```{r}
+#Linear model 1 
+regr <- lm(mpg ~ ., data = mtcars)
+```
+
+Figure 3 shows the summary results of the lm() object. The residual standard error has a value of 2.65 on 21 degrees of freedom. The adjusted R-squared value of 0.8066 means the linear regression accounts for 81% of mpg’s variance. Wt is the only variable showing significance in the results at 0.1%. 
+
+The second model has the top four correlated variables to mpg including cyl, disp, hp, and wt. 
+
+
+```{r}
+#Linear model 2
+regr2 <- lm(mpg ~ cyl + disp + hp + wt + am, data = mtcars)
+```
+
+Figure 4 shows the summary results of the second lm() object. Stated earlier, the plots identified variables that have a positive correlation within the mtcars dataset. For example, most cars with greater displacement have more horsepower and cars. Wt shows significance at 0.01% confidence suggesting evidence against the null hypothesis that Ho:B6 = 0, suggesting a relationship with mpg. Hp shows sigificance at 0.1% confidence. Interpreting the am coefficient, having an manual transmission (n=1) increases mpg by 1.55. 
+
+The base plotting system was used for plotting the regression object. Figure 5 shows the Normal Q-Q graph of the second regression line shows that the model does not exactly fit the residuals. Even if the model does not fit the data, it gives some inference about the relationship between mpg and am. The second regession represents a superior model over the first because of the higher adj-R^2. Accessing model validation can only be compared in this case with the adj-R^2 because the R^2 increases with more variables added. 
+
+The residuals vs fitted graph from Figure 5 shows that the residuals do not have a pattern, but are highly dispered around the line. The residuals have to sum to zero, but most are not near the line.  
+
+##Conclusion
+
+The second model with reduced number of independent variables will be used for answering questions one and two. For question one, manual transmission represents a higher increase in mpg than automatic. For question two, manual increases mpg by 1.55 more. The finding makes sense because the data comes from cars between 1973-1974. During that time period single clutch automated transmissions were used for automatic, but replaced by double-clutch automatic transmissions in the present period. 
+
+##Appendix
+
+###Figure 1: Scatterplot matrix with cylinders as factors
+```{r, echo = FALSE}
+#Scatterplot matrix of all variables
+#Load lattice package
+library(lattice)
+#Scatterplot matrix of mpg, disp, hp, drat, wt, and qsec
+splom(~mtcars[c(1, 3:7)], data = mtcars, groups = cyl, pscales = 0,
+      auto.key = list(columns = 3, title = "Number of Cylinders"))
+```
+
+###Figure 2: Plot of mpg with am
+```{r, echo = FALSE}
+#Plot mpg against am
+xyplot(mpg ~ am, data = mtcars, type = c("p", "r"))
+```
+
+###Figure 3: Results of first regression
+```{r, echo = FALSE}
+#Linear model 1 
+regr <- lm(mpg ~ ., data = mtcars)
+#Summary of regression
+summary(regr)
+```
+
+###Figure 4: Results of second regression
+```{r, echo = FALSE}
+#Linear model 2
+regr2 <- lm(mpg ~ cyl + disp + hp + wt + am, data = mtcars)
+#Summary of regression
+summary(regr2)
+```
+
+###Figure 5: Visualizing residuals from second regression
+```{r, echo = FALSE}
+#Graph regression line 
+plot(regr2)
+```
+
